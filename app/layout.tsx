@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Todo",
   description: "Basic Todo App",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
