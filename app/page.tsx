@@ -7,13 +7,13 @@ import { LoginGoogle } from './google-login';
 export default () => {
   const [ email, setEmail ] = useState('');
   const success = (input : string) => {
-    window.sessionStorage.setItem('email', input);
+    window.localStorage.setItem('email', input);
     setEmail(input);
   };
 
   useEffect(() => {
-    if (window.sessionStorage.getItem('email')) {
-      setEmail(window.sessionStorage.getItem('email') as string);
+    if (window.localStorage.getItem('email')) {
+      setEmail(window.localStorage.getItem('email') as string);
     }
   }, []);
 
