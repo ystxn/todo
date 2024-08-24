@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "flowbite": "^2.5.1",
     "mongodb": "^6.5.0",
     "next": "latest",
     "react": "^18",

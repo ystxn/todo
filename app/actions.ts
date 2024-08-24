@@ -9,7 +9,7 @@ export const getTasks = async () : Promise<Todo[]> => {
     const data = await client.db("todo")
       .collection<Todo>("todo")
       .find({})
-      //  .sort({ metacritic: -1 })
+      .sort({ done: 1, created: -1 })
       .limit(20)
       .toArray();
     return JSON.parse(JSON.stringify(data));
@@ -29,4 +29,10 @@ export const addTask = async (newTaskName : string) => {
     console.log('Creating new todo:', newTodo);
     const data = await client.db("todo").collection("todo").insertOne(newTodo);
     return JSON.parse(JSON.stringify(data));
+};
+
+export const toggleTask = async (id: ObjectId, done: boolean) => {
+  console.log(`Marking todo ${id} as ${done}`);
+  const data = await client.db("todo").collection("todo").updateOne({ _id: new ObjectId(id) }, { $set: { done } });
+  return JSON.parse(JSON.stringify(data));
 };
