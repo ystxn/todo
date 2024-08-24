@@ -1,12 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Todo } from "./interfaces";
 import { addTask, getTasks, toggleTask } from "./actions";
 import { FormEvent } from "react";
 
-const TodoItem = ({ item, refreshData } : { item: Todo, refreshData: () => void }) => {
+interface TodoItemProps {
+  item: Todo;
+  refreshData: () => void;
+  setTasks: Dispatch<SetStateAction<Todo[]>>;
+};
+const TodoItem = ({ item, refreshData, setTasks } : TodoItemProps) => {
   const toggle = () => {
+    setTasks((tasks) => tasks.map((task) => (task._id !== item._id) ? task : { ...task, done: !item.done }));
     toggleTask(item._id, !item.done).then(() => refreshData());
   };
   return (
@@ -65,6 +71,7 @@ export default () => {
             key={item._id.toString()}
             item={item}
             refreshData={refreshData}
+            setTasks={setTasks}
           />
         ))}
       </div>
