@@ -5,4 +5,5 @@ export interface Todo {
     name: string;
     done: boolean;
     created: Date;
+    owner: string;
 }
