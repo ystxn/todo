@@ -18,6 +18,6 @@ export default () => {
   }, []);
 
   return email ? <App email={email} /> : (
-      <LoginGoogle login={success} denied={email === null} />
+    <LoginGoogle login={success} denied={email === null} />
   );
 };
