@@ -10,7 +10,7 @@ export const getTasks = async (email : string) : Promise<Todo[]> => {
   try {
     const data = await collection
       .find({ owner: email })
-      .sort({ done: 1, created: -1 })
+      .sort({ done: 1, created: 1 })
       .limit(20)
       .toArray();
     return JSON.parse(JSON.stringify(data));
@@ -29,8 +29,8 @@ export const addTask = async (email : string, newTaskName : string) => {
         owner: email,
     };
     console.log('Creating new todo:', newTodo);
-    const data = await collection.insertOne(newTodo);
-    return JSON.parse(JSON.stringify(data));
+    await collection.insertOne(newTodo);
+    return await getTasks(email);
 };
 
 export const toggleTask = async (id: string, done: boolean) => {

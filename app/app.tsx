@@ -1,22 +1,32 @@
 "use client"
 
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState, useRef } from "react";
 import { Todo } from "./interfaces";
 import { addTask, getTasks, toggleTask, deleteTask } from "./actions";
 import { FormEvent } from "react";
 
 interface TodoItemProps {
   item: Todo;
-  refreshData: () => void;
   setTasks: Dispatch<SetStateAction<Todo[]>>;
 };
-const TodoItem = ({ item, refreshData, setTasks } : TodoItemProps) => {
+const TodoItem = ({ item, setTasks } : TodoItemProps) => {
   const id = item._id.toString();
-  const toggle = () => {
-    setTasks((tasks) => tasks.map((task) => (task._id !== item._id) ? task : { ...task, done: !item.done }));
-    toggleTask(id, !item.done).then(() => refreshData());
+  const toggle = async () => {
+    setTasks((tasks) => tasks
+      .map((task) => (task._id !== item._id) ? task : { ...task, done: !item.done })
+      .toSorted((a, b) => {
+        if (a.done !== b.done) {
+          return a.done ? 1 : -1;
+        }
+        return new Date(a.created).getTime() - new Date(b.created).getTime();
+      })
+    );
+    await toggleTask(id, !item.done);
   };
-  const removeTask = () => deleteTask(id).then(() => refreshData());
+  const removeTask = async () => {
+    setTasks((tasks) => tasks.filter(({ _id }) => _id.toString() !== id));
+    await deleteTask(id);
+  };
 
   return (
     <div className="flex items-center mb-4 mt-1 ml-1">
@@ -45,17 +55,23 @@ const TodoItem = ({ item, refreshData, setTasks } : TodoItemProps) => {
 export default ({ email } : { email : string }) => {
   const [ tasks, setTasks ] = useState([] as Todo[]);
   const [ loading, setLoading ] = useState(false);
-
-  const refreshData = () => getTasks(email).then((data) => setTasks(data));
+  const effectRan = useRef(false);
 
   useEffect(() => {
+    if (effectRan.current) {
+      return;
+    }
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then(() => console.log('Service Worker registered'))
         .catch((err) => console.error('Service Worker registration failed', err));
     }
-    refreshData();
+    getTasks(email).then((data) => setTasks(data));
+
+    return () => {
+      effectRan.current = true;
+    };
   }, []);
 
   const handleFormSubmit = (e: FormEvent) => {
@@ -63,14 +79,14 @@ export default ({ email } : { email : string }) => {
     if (loading) {
         return;
     }
-    setLoading(true);
     const formData = new FormData(e.target as HTMLFormElement);
     const taskName = formData.get("taskName")?.toString();
     if (!taskName) {
       return;
     }
-    addTask(email, taskName).then(() => {
-      refreshData();
+    setLoading(true);
+    addTask(email, taskName).then((newTasks) => {
+      setTasks(newTasks);
       (e.target as HTMLFormElement).reset();
     }).finally(() => setLoading(false));
   };
@@ -83,22 +99,23 @@ export default ({ email } : { email : string }) => {
           <TodoItem
             key={item._id.toString()}
             item={item}
-            refreshData={refreshData}
             setTasks={setTasks}
           />
         ))}
       </div>
       <form onSubmit={handleFormSubmit} className="flex gap-5">
         <input
-          className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none"
           name="taskName"
           type="text"
           placeholder="New task.."
           autoComplete="off"
+          disabled={loading}
         />
         <button
-          className="shadow bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-nowrap"
+          className="shadow bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-nowrap disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none"
           type="submit"
+          disabled={loading}
         >
           Add Todo
         </button>

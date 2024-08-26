@@ -1,5 +1,13 @@
-self.addEventListener('install', () => {});
+const installEvent = () => {
+  self.addEventListener('install', () => {
+    console.log('service worker installed');
+  });
+};
+installEvent();
 
-self.addEventListener('fetch', (e) => {
-  fetch(e.request);
-});
+const activateEvent = () => {
+  self.addEventListener('activate', () => {
+    console.log('service worker activated');
+  });
+};
+activateEvent();
