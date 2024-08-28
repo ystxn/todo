@@ -1,9 +1,9 @@
 "use server";
 
-import client from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { Todo } from '../app/interfaces';
 import { OAuth2Client } from 'google-auth-library';
+import { ObjectId } from 'mongodb';
+import { Todo } from '../interfaces';
+import client from './mongodb';
 
 const collection = client.db('todo').collection<Todo>('todo');
 

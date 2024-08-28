@@ -1,10 +1,14 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useEffect } from 'react';
-import { decodeJWT } from './util';
 
 interface LoginGoogleProps {
   login: (email : string) => void;
   denied: boolean;
+};
+
+const decodeJWT = (jwt: string) => {
+  const parts = jwt.split('.');
+  return (parts.length !== 3) ? '' : JSON.parse(Buffer.from(parts[1], 'base64').toString());
 };
 
 export const LoginGoogle = ({

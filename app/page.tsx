@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from 'react';
-import App from './app';
-import { LoginGoogle } from './google-login';
+import App from './client/app';
+import { LoginGoogle } from './client/google-login';
 
 export default () => {
   const [ token, setToken ] = useState('');
