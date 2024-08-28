@@ -1,6 +1,6 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Todo } from "../interfaces";
-import { deleteTask, toggleTask } from "../server/actions";
+import { deleteTask, toggleTask, renameTask } from "../server/actions";
 
 interface TodoItemProps {
   item: Todo;
@@ -26,6 +26,7 @@ const TrashIcon = () => (
 );
 
 export default ({ item, setTasks, token }: TodoItemProps) => {
+  const [editMode, setEditMode] = useState(false);
   const id = item._id.toString();
 
   const toggle = async () => {
@@ -49,6 +50,34 @@ export default ({ item, setTasks, token }: TodoItemProps) => {
     await deleteTask(token, id);
   };
 
+  const editTask = async () => {
+    const input = document.querySelector("input[name=editor]");
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+    const newTaskName = input.value.trim();
+
+    setEditMode(false);
+    if (item.name !== newTaskName) {
+      setTasks((tasks) =>
+        tasks.map((task) =>
+          task._id !== item._id ? task : { ...task, name: newTaskName }
+        )
+      );
+      await renameTask(token, id, newTaskName);
+    }
+  };
+
+  useEffect(() => {
+    if (!editMode) {
+      return;
+    }
+    const input = document.querySelector("input[name=editor]");
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+    }
+  }, [editMode]);
+
   return (
     <div className="flex items-center mb-4 mt-1 ml-1">
       <input
@@ -58,14 +87,23 @@ export default ({ item, setTasks, token }: TodoItemProps) => {
         type="checkbox"
         className="w-4 h-4 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
       />
-      <label
-        htmlFor={id}
-        className={`ms-2 text-sm font-medium cursor-pointer w-full select-none ${
-          item.done && "text-gray-400 line-through"
-        }`}
-      >
-        {item.name}
-      </label>
+      {!editMode ? (
+        <label
+          onDoubleClick={() => setEditMode(true)}
+          className={`ms-2 text-sm font-medium cursor-pointer w-full select-none ${
+            item.done && "text-gray-400 line-through"
+          }`}
+        >
+          {item.name}
+        </label>
+      ) : (
+        <input
+          name="editor"
+          className="shadow bg-slate-100 text-black appearance-none border rounded w-full py-1 px-1 mx-2 leading-tight"
+          defaultValue={item.name}
+          onBlur={editTask}
+        />
+      )}
       {item.done && (
         <button
           className="text-red-700 hover:text-red-500 mx-4"

@@ -49,6 +49,13 @@ export const toggleTask = async (token: string, id: string, done: boolean) => {
   return JSON.parse(JSON.stringify(data));
 };
 
+export const renameTask = async (token: string, id: string, name: string) => {
+  console.log(`Renaming ${id} to ${name}`);
+  const email = await authorise(token);
+  const data = await collection.updateOne({ _id: new ObjectId(id), owner: email }, { $set: { name } });
+  return JSON.parse(JSON.stringify(data));
+};
+
 export const deleteTask = async (token : string, id: string) => {
   const email = await authorise(token);
   await collection.deleteOne({ _id: new ObjectId(id), owner: email });
