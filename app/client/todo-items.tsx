@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Todo } from "../interfaces";
-import { deleteTask, toggleTask, renameTask } from "../server/actions";
+import { deleteTask, toggleTask, renameTask, updateOrder } from "../server/actions";
 
 interface TodoItemProps {
-  items: Todo[];
+  tasks: Todo[];
   setTasks: Dispatch<SetStateAction<Todo[]>>;
   token: string;
 }
@@ -25,14 +25,14 @@ const TrashIcon = () => (
   </svg>
 );
 
-export default ({ items, setTasks, token }: TodoItemProps) => {
+export default ({ tasks, setTasks, token }: TodoItemProps) => {
   const [ editId, setEditId ] = useState('');
   const [ dragAndDrop, setDragAndDrop ] = useState({
-    draggedFrom: null,
-    draggedTo: null,
+    draggedFrom: 0,
+    draggedTo: 0,
     isDragging: false,
-    originalOrder: [],
-    updatedOrder: [],
+    originalOrder: [] as Todo[],
+    updatedOrder: [] as Todo[],
   });
 
   const toggle = async (item : Todo) => {
@@ -44,6 +44,9 @@ export default ({ items, setTasks, token }: TodoItemProps) => {
         .toSorted((a, b) => {
           if (a.done !== b.done) {
             return a.done ? 1 : -1;
+          }
+          if (a.order !== b.order) {
+            return b.order - a.order;
           }
           return new Date(a.created).getTime() - new Date(b.created).getTime();
         })
@@ -86,18 +89,54 @@ export default ({ items, setTasks, token }: TodoItemProps) => {
     }
   }, [ editId ]);
 
-  const onDragStart = () => {
-
+  const onDragStart = (event : React.DragEvent<HTMLElement>) => {
+    const initialPosition = Number(event.currentTarget.dataset.position);
+    setDragAndDrop({
+      ...dragAndDrop,
+      draggedFrom: initialPosition,
+      isDragging: true,
+      originalOrder: tasks,
+    });
+    event.dataTransfer.setData('text/html', '');
   };
 
   const onDragOver = (event : React.DragEvent<HTMLElement>) => {
     event.preventDefault();
+    let newList = dragAndDrop.originalOrder;
+    const draggedFrom = dragAndDrop.draggedFrom;
+    const draggedTo = Number(event.currentTarget.dataset.position);
+    const itemDragged = newList[draggedFrom];
+    const remainingItems = newList.filter((_, index) => index !== draggedFrom);
+    newList = [
+      ...remainingItems.slice(0, draggedTo),
+      itemDragged,
+      ...remainingItems.slice(draggedTo)
+    ];
+
+    if (draggedTo !== dragAndDrop.draggedTo) {
+      setDragAndDrop({
+        ...dragAndDrop,
+        updatedOrder: newList,
+        draggedTo: draggedTo
+      });
+    }
   };
 
-  const onDrop = () => {
+  const onDrop = async () => {
+    const length = dragAndDrop.updatedOrder.length;
+    const orderedList = dragAndDrop.updatedOrder.map((item, index) => ({ ...item, order: length - index }));
+    setTasks(orderedList);
+    setDragAndDrop({
+      ...dragAndDrop,
+      draggedFrom: 0,
+      draggedTo: 0,
+      isDragging: false,
+    });
+
+    updateOrder(token, orderedList.map(({ _id, order }) => ({ id: _id.toString(), order })));
   };
 
-  return items.map((item, index) => (
+  return tasks.map((item, index) => (
     <div
       key={item._id.toString()}
       data-position={index}

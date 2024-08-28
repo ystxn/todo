@@ -1,13 +1,5 @@
-const installEvent = () => {
-  self.addEventListener('install', () => {
-    console.log('service worker installed');
-  });
-};
+const installEvent = () => self.addEventListener('install', () => {});
 installEvent();
 
-const activateEvent = () => {
-  self.addEventListener('activate', () => {
-    console.log('service worker activated');
-  });
-};
+const activateEvent = () => self.addEventListener('activate', () => {});
 activateEvent();

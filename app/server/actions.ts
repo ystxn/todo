@@ -1,8 +1,8 @@
 "use server";
 
 import { OAuth2Client } from 'google-auth-library';
-import { ObjectId } from 'mongodb';
-import { Todo } from '../interfaces';
+import { AnyBulkWriteOperation, ObjectId } from 'mongodb';
+import { Todo, TodoOrder } from '../interfaces';
 import client from './mongodb';
 
 const collection = client.db('todo').collection<Todo>('todo');
@@ -18,8 +18,7 @@ export const getTasks = async (token : string) : Promise<Todo[]> => {
   try {
     const data = await collection
       .find({ owner: email })
-      .sort({ done: 1, created: 1 })
-      .limit(20)
+      .sort({ done: 1, order: -1, created: 1 })
       .toArray();
     return JSON.parse(JSON.stringify(data));
   } catch (e) {
@@ -28,7 +27,7 @@ export const getTasks = async (token : string) : Promise<Todo[]> => {
   }
 };
 
-export const addTask = async (token : string, newTaskName : string) => {
+export const addTask = async (token : string, order : number, newTaskName : string) => {
   const email = await authorise(token);
   const newTodo : Todo = {
       _id: new ObjectId(),
@@ -36,6 +35,7 @@ export const addTask = async (token : string, newTaskName : string) => {
       done: false,
       created: new Date(),
       owner: email,
+      order,
   };
   console.log('Creating new todo:', newTodo);
   await collection.insertOne(newTodo);
@@ -59,4 +59,16 @@ export const renameTask = async (token: string, id: string, name: string) => {
 export const deleteTask = async (token : string, id: string) => {
   const email = await authorise(token);
   await collection.deleteOne({ _id: new ObjectId(id), owner: email });
+};
+
+export const updateOrder = async (token : string, data: TodoOrder[]) => {
+  const email = await authorise(token);
+
+  const bulkOps : AnyBulkWriteOperation<Todo>[] = data.map((item) => ({
+    updateOne: {
+      filter: { _id: new ObjectId(item.id), owner: email },
+      update: { $set: { order: item.order } }
+    }
+  }));
+  await collection.bulkWrite(bulkOps);
 };

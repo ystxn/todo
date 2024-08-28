@@ -33,12 +33,13 @@ export default ({ token } : { token : string }) => {
         return;
     }
     const formData = new FormData(e.target as HTMLFormElement);
-    const taskName = formData.get("taskName")?.toString();
+    const taskName = formData.get('taskName')?.toString();
     if (!taskName) {
       return;
     }
     setLoading(true);
-    addTask(token, taskName).then((newTasks) => {
+    const maxOrder = tasks.reduce((max, obj) => Math.max(max, obj.order), -Infinity);
+    addTask(token, maxOrder + 1, taskName).then((newTasks) => {
       setTasks(newTasks);
       (e.target as HTMLFormElement).reset();
     }).finally(() => setLoading(false));
@@ -49,7 +50,7 @@ export default ({ token } : { token : string }) => {
       <h1 className="font-bold text-xl">Todo</h1>
       <div className="flex flex-1 gap-1 flex-col overflow-y-scroll">
         <TodoItems
-          items={tasks}
+          tasks={tasks}
           setTasks={setTasks}
           token={token}
         />
