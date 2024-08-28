@@ -89,6 +89,10 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
     }
   }, [ editId ]);
 
+  const onDragEnter = (event : React.DragEvent<HTMLElement>) => {
+    event.preventDefault();
+  };
+
   const onDragStart = (event : React.DragEvent<HTMLElement>) => {
     const initialPosition = Number(event.currentTarget.dataset.position);
     setDragAndDrop({
@@ -142,6 +146,7 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
       data-position={index}
       className="flex items-center mb-4 mt-1 ml-1"
       draggable="true"
+      onDragEnter={onDragEnter}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}

@@ -4,11 +4,14 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Todo } from '../interfaces';
 import { addTask, getTasks } from '../server/actions';
 import TodoItems from './todo-items';
+import { polyfill } from 'mobile-drag-drop';
 
 export default ({ token } : { token : string }) => {
   const [ tasks, setTasks ] = useState([] as Todo[]);
   const [ loading, setLoading ] = useState(false);
   const effectRan = useRef(false);
+
+  polyfill();
 
   useEffect(() => {
     if (effectRan.current) {

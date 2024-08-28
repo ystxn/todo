@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-dvh flex text-lg bg-stone-800">
-      <body className={`h-dvh flex flex-1 overflow-y-hidden ${inter.className}`}>{children}</body>
+      <body className={`h-dvh flex flex-1 ${inter.className}`}>{children}</body>
     </html>
   );
 }
