@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Todo } from '../interfaces';
 import { addTask, getTasks } from '../server/actions';
-import TodoItem from './todo-item';
+import TodoItems from './todo-items';
 
 export default ({ token } : { token : string }) => {
   const [ tasks, setTasks ] = useState([] as Todo[]);
@@ -48,14 +48,11 @@ export default ({ token } : { token : string }) => {
     <div className="flex flex-1 flex-col justify-between bg-stone-900 shadow-lg rounded-md p-2 m-2 gap-3 text-white">
       <h1 className="font-bold text-xl">Todo</h1>
       <div className="flex flex-1 gap-1 flex-col overflow-y-scroll">
-        {tasks.map((item) => (
-          <TodoItem
-            key={item._id.toString()}
-            item={item}
-            setTasks={setTasks}
-            token={token}
-          />
-        ))}
+        <TodoItems
+          items={tasks}
+          setTasks={setTasks}
+          token={token}
+        />
       </div>
       <form onSubmit={handleFormSubmit} className="flex gap-2">
         <input
