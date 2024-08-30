@@ -44,15 +44,7 @@ export const LoginGoogle = ({
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <div
-        style={{
-          display: 'flex',
-          flexFlow: 'column nowrap',
-          alignItems: 'center',
-          margin: '5rem auto',
-          textAlign: 'center',
-        }}
-      >
+      <div className="text-white flex flex-1 self-center flex-col items-center gap-3">
         <h2>Please sign in to your Google account</h2>
         {denied ? (<em>Not authorised</em>) : (
           <GoogleLogin

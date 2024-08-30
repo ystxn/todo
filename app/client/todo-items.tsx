@@ -128,7 +128,15 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
 
   const onDrop = async () => {
     const length = dragAndDrop.updatedOrder.length;
-    const orderedList = dragAndDrop.updatedOrder.map((item, index) => ({ ...item, order: length - index }));
+    const orderedList = dragAndDrop.updatedOrder
+      .map((item, index) => ({ ...item, order: length - index }))
+      .toSorted((a, b) => {
+        if (a.done !== b.done) {
+          return a.done ? 1 : -1;
+        }
+        return b.order - a.order;
+      })
+      .map((item, index) => ({ ...item, order: length - index }));
     setTasks(orderedList);
     setDragAndDrop({
       ...dragAndDrop,
