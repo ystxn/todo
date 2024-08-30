@@ -1,29 +1,13 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Todo } from "../interfaces";
 import { deleteTask, toggleTask, renameTask, updateOrder } from "../server/actions";
+import { TrashIcon } from "./icons";
 
 interface TodoItemProps {
   tasks: Todo[];
   setTasks: Dispatch<SetStateAction<Todo[]>>;
   token: string;
 }
-
-const TrashIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth="1.5"
-    stroke="currentColor"
-    className="size-5"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125 2.25 2.25m0 0 2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"
-    />
-  </svg>
-);
 
 export default ({ tasks, setTasks, token }: TodoItemProps) => {
   const [ editId, setEditId ] = useState('');
@@ -153,7 +137,7 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
       key={item._id.toString()}
       data-position={index}
       className="flex items-center mb-4 mt-1 ml-1"
-      draggable="true"
+      draggable={editId === ''}
       onDragEnter={onDragEnter}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
@@ -163,13 +147,13 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
         checked={item.done}
         onChange={() => toggle(item)}
         type="checkbox"
-        className="w-4 h-4 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+        className="appearance-none text-green-500 w-4 h-4 bg-teal-100 border-teal-700 focus:ring-0 focus:ring-offset-0 rounded cursor-pointer"
       />
       {editId !== item._id.toString() ? (
         <label
           onDoubleClick={() => setEditId(item._id.toString())}
           className={`ms-2 text-sm font-medium cursor-pointer w-full select-none ${
-            item.done && "text-gray-400 line-through"
+            item.done && "text-teal-800 dark:text-teal-300 line-through"
           }`}
         >
           {item.name}
@@ -177,7 +161,7 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
       ) : (
         <input
           name="editor"
-          className="shadow bg-slate-100 text-black appearance-none border rounded w-full py-1 px-1 mx-2 leading-tight"
+          className="appearance-none text-sm text-teal-700 bg-teal-50 border-teal-700 border rounded w-full p-1 mx-2 leading-tight focus-visible:ring-1 focus-visible:outline-none focus-visible:ring-teal-500 focus-visible:border-teal-500 focus-visible:shadow-none"
           defaultValue={item.name}
           onBlur={() => editTask(item)}
         />

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
+import { ViewportLayout } from 'next/dist/lib/metadata/types/extra-types';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ViewportLayout } from 'next/dist/lib/metadata/types/extra-types';
 
 const inter = Inter({ subsets: [ 'latin' ] });
 
@@ -17,14 +17,10 @@ export const viewport: ViewportLayout = {
   userScalable: false,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-dvh flex text-lg bg-stone-800">
-      <body className={`h-dvh flex flex-1 ${inter.className}`}>{children}</body>
+    <html lang="en" className="h-dvh flex text-lg">
+      <body className={`h-dvh flex flex-1 bg-teal-900 dark:bg-gray-600 dark:text-teal-50 ${inter.className}`}>{children}</body>
     </html>
   );
-}
+};
