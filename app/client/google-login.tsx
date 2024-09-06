@@ -1,14 +1,8 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useEffect } from 'react';
 
 interface LoginGoogleProps {
   login: (email : string) => void;
   denied: boolean;
-};
-
-const decodeJWT = (jwt: string) => {
-  const parts = jwt.split('.');
-  return (parts.length !== 3) ? '' : JSON.parse(Buffer.from(parts[1], 'base64').toString());
 };
 
 export const LoginGoogle = ({
@@ -22,7 +16,6 @@ export const LoginGoogle = ({
     if (!creds.credential) {
       return;
     }
-    window.localStorage.setItem('token', creds.credential);
     login(creds.credential);
   };
 
@@ -30,17 +23,6 @@ export const LoginGoogle = ({
   if (!clientId) {
     throw new Error('Invalid/Missing environment variable: "NEXT_PUBLIC_GOOGLE_CLIENT_ID"');
   }
-
-  useEffect(() => {
-    const tokenString = window.localStorage.getItem('token');
-    if (!tokenString) {
-      return;
-    }
-    const token = decodeJWT(tokenString);
-    if ((new Date().getTime()) < (token.exp * 1000)) {
-      login(tokenString);
-    }
-  }, []);
 
   return (
     <GoogleOAuthProvider clientId={clientId}>

@@ -20,7 +20,9 @@ export const viewport: ViewportLayout = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-dvh flex text-lg">
-      <body className={`h-dvh flex flex-1 bg-teal-900 dark:bg-gray-600 dark:text-teal-50 ${inter.className}`}>{children}</body>
+      <body className={`h-dvh flex flex-1 bg-teal-900 dark:bg-gray-600 dark:text-teal-50 ${inter.className}`}>
+        {children}
+      </body>
     </html>
   );
 };
