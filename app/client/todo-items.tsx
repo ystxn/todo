@@ -11,6 +11,7 @@ interface TodoItemProps {
 
 export default ({ tasks, setTasks, token }: TodoItemProps) => {
   const [ editId, setEditId ] = useState('');
+  const [ editName, setEditName ] = useState('');
   const [ dragAndDrop, setDragAndDrop ] = useState({
     draggedFrom: 0,
     draggedTo: 0,
@@ -51,6 +52,9 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
       return;
     }
     const newTaskName = input.value.trim();
+    if (newTaskName.length < 3) {
+      return;
+    }
 
     setEditId('');
     if (item.name !== newTaskName) {
@@ -132,6 +136,18 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
     updateOrder(token, orderedList.map(({ _id, order }) => ({ id: _id.toString(), order })));
   };
 
+  const handleDoubleClick = (item : Todo) => {
+    setEditId(item._id.toString());
+    setEditName(item.name);
+  };
+
+  const handleKeyDown = (event : React.KeyboardEvent<HTMLDivElement>, item : Todo) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    editTask(item);
+  };
+
   return tasks.map((item, index) => (
     <div
       key={item._id.toString()}
@@ -151,7 +167,7 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
       />
       {editId !== item._id.toString() ? (
         <label
-          onDoubleClick={() => setEditId(item._id.toString())}
+          onDoubleClick={() => handleDoubleClick(item)}
           className={`ms-2 text-sm font-medium cursor-pointer w-full select-none ${
             item.done && "text-teal-800 dark:text-teal-300 line-through"
           }`}
@@ -159,12 +175,19 @@ export default ({ tasks, setTasks, token }: TodoItemProps) => {
           {item.name}
         </label>
       ) : (
-        <input
-          name="editor"
-          className="appearance-none text-sm text-teal-700 bg-teal-50 border-teal-700 border rounded w-full p-1 mx-2 leading-tight focus-visible:ring-1 focus-visible:outline-none focus-visible:ring-teal-500 focus-visible:border-teal-500 focus-visible:shadow-none"
-          defaultValue={item.name}
-          onBlur={() => editTask(item)}
-        />
+        <div className="flex flex-1 flex-col">
+          <input
+            name="editor"
+            className="appearance-none text-sm text-teal-700 bg-teal-50 border-teal-700 border rounded w-full p-1 mx-2 leading-tight focus-visible:ring-1 focus-visible:outline-none focus-visible:ring-teal-500 focus-visible:border-teal-500 focus-visible:shadow-none"
+            onBlur={() => editTask(item)}
+            onKeyDown={(event) => handleKeyDown(event, item)}
+            value={editName}
+            onChange={({ target }) => setEditName(target.value)}
+          />
+          <div id="toast-simple" className={`${editName.length >= 3 ? 'hidden' : 'flex'} text-sm text-gray-800 bg-red-100 divide-x ml-2 mt-2 p-2 divide-gray-200 rounded-md shadow dark:text-gray-100 dark:divide-gray-700 dark:bg-red-900`} role="alert">
+              Task name needs to be at least 3 characters
+          </div>
+        </div>
       )}
       {item.done && (
         <button

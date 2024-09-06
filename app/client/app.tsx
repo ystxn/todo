@@ -15,7 +15,8 @@ interface AppProps {
 
 export default ({ token, darkMode, setDarkMode } : AppProps) => {
   const [ tasks, setTasks ] = useState([] as Todo[]);
-  const [ loading, setLoading ] = useState(false);
+  const [ loading, setLoading ] = useState(true);
+  const [ newTaskName, setNewTaskName ] = useState('');
   const effectRan = useRef(false);
 
   polyfill();
@@ -27,7 +28,9 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
-    getTasks(token).then((data) => setTasks(data));
+    getTasks(token)
+      .then((data) => setTasks(data))
+      .finally(() => setLoading(false));
 
     return () => {
       effectRan.current = true;
@@ -39,14 +42,12 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
     if (loading) {
         return;
     }
-    const formData = new FormData(e.target as HTMLFormElement);
-    const taskName = formData.get('taskName')?.toString();
-    if (!taskName) {
+    if (newTaskName.length < 3) {
       return;
     }
     setLoading(true);
     const maxOrder = tasks.reduce((max, obj) => Math.max(max, obj.order), -Infinity);
-    addTask(token, maxOrder + 1, taskName).then((newTasks) => {
+    addTask(token, maxOrder + 1, newTaskName).then((newTasks) => {
       setTasks(newTasks);
       (e.target as HTMLFormElement).reset();
     }).finally(() => setLoading(false));
@@ -66,6 +67,11 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
         </div>
       </div>
       <div className="flex flex-1 gap-1 flex-col overflow-y-scroll">
+        {(!loading && tasks.length === 0) && (
+          <div>
+            No tasks yet
+          </div>
+        )}
         <TodoItems
           tasks={tasks}
           setTasks={setTasks}
@@ -80,11 +86,13 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
           placeholder="New task.."
           autoComplete="off"
           disabled={loading}
+          value={newTaskName}
+          onChange={({ target }) => setNewTaskName(target.value)}
         />
         <button
           className="shadow bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-nowrap disabled:bg-slate-500 disabled:text-slate-100 disabled:border-slate-200 disabled:cursor-not-allowed"
           type="submit"
-          disabled={loading}
+          disabled={newTaskName.length < 3 || loading}
         >
           Add Todo
         </button>
