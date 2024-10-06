@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, FormEvent, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState, useActionState } from 'react';
 import { Todo } from '../interfaces';
 import { addTask, getTasks } from '../server/actions';
 import TodoItems from './todo-items';
@@ -16,7 +16,7 @@ interface AppProps {
 export default ({ token, darkMode, setDarkMode } : AppProps) => {
   const [ tasks, setTasks ] = useState([] as Todo[]);
   const [ loading, setLoading ] = useState(true);
-  const [ newTaskName, setNewTaskName ] = useState('');
+  const [ disableSubmit, setDisableSubmit ] = useState(true);
   const effectRan = useRef(false);
 
   polyfill();
@@ -37,21 +37,16 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
     };
   }, []);
 
-  const handleFormSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (loading) {
-        return;
-    }
-    if (newTaskName.length < 3) {
+  const saveItem = async (_: unknown, formData: FormData) => {
+    const newItemName = formData.get('taskName') as string;
+    if (newItemName?.length < 3) {
       return;
     }
-    setLoading(true);
     const maxOrder = tasks.reduce((max, obj) => Math.max(max, obj.order), -Infinity);
-    addTask(token, maxOrder + 1, newTaskName).then((newTasks) => {
-      setTasks(newTasks);
-      (e.target as HTMLFormElement).reset();
-    }).finally(() => setLoading(false));
+    setTasks(await addTask(token, maxOrder + 1, newItemName));
   };
+
+  const [ _, handleSubmit, isPending ] = useActionState(saveItem, undefined);
 
   return (
     <div className="flex flex-1 flex-col justify-between shadow-lg rounded-md p-2 m-2 gap-3 bg-teal-50 dark:bg-gray-800">
@@ -78,21 +73,20 @@ export default ({ token, darkMode, setDarkMode } : AppProps) => {
           token={token}
         />
       </div>
-      <form onSubmit={handleFormSubmit} className="flex gap-2">
+      <form action={handleSubmit} className="flex gap-2">
         <input
           className="appearance-none w-0 bg-teal-50 text-teal-700 border-teal-700 placeholder:italic placeholder:text-teal-500 placeholder:font-light focus:ring-teal-700 focus:border-teal-700 focus:shadow-none flex-1 rounded p-3 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:cursor-not-allowed"
           name="taskName"
           type="text"
           placeholder="New task.."
           autoComplete="off"
-          disabled={loading}
-          value={newTaskName}
-          onChange={({ target }) => setNewTaskName(target.value)}
+          disabled={isPending}
+          onChange={({ target }) => setDisableSubmit(target.value.length < 3)}
         />
         <button
           className="shadow bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-nowrap disabled:bg-slate-500 disabled:text-slate-100 disabled:border-slate-200 disabled:cursor-not-allowed"
           type="submit"
-          disabled={newTaskName.length < 3 || loading}
+          disabled={disableSubmit || isPending}
         >
           Add Todo
         </button>
